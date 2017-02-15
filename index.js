@@ -1,18 +1,33 @@
-// Start up the server
-var express = require('express');
-var alexa = require('alexa-app');
-var bodyParser = require('body-parser');
+var alexa = require( 'alexa-app' );
 
-var app = express();
-var PORT = process.env.port || 3000;
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.set('view engine','ejs');
+// Allow this module to be reloaded by hotswap when changed
+module.change_code = 1;
 
-app.get('/', function (req, res) {
-  res.send('Hello World!');
+// Define an alexa-app
+var app = new alexa.app('hello_world');
+app.launch(function(req, res) {
+  res.say("Hello World!!");
 });
 
-app.listen(process.env.PORT || 3000, process.env.IP || "127.0.0.1", function() {
-  console.log("Server listening at " + process.env.IP + " : " + process.env.PORT);
+app.intent('NameIntent', {
+  "slots": { "NAME": "LITERAL", "AGE": "NUMBER" },
+  "utterances": ["{My name is|my name's} {matt|bob|bill|jake|nancy|mary|jane|NAME} and I am {1-100|AGE}{ years old|}"]
+}, function(req, res) {
+  res.say('Your name is ' + req.slot('NAME') + ' and you are ' + req.slot('AGE') + ' years old');
 });
+
+app.intent('AgeIntent', {
+  "slots": { "AGE": "NUMBER" },
+  "utterances": ["My age is {1-100|AGE}"]
+}, function(req, res) {
+  res.say('Your age is ' + req.slot('AGE'));
+});
+
+module.exports = app;
+
+ 
+// connect the alexa-app to AWS Lambda 
+exports.handler = app.lambda();
+
+module.exports = app
+

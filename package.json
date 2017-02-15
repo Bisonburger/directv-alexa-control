@@ -1,22 +1,38 @@
 {
-  "name": "chat-example",
-  "version": "0.0.0",
-  "description": "A chat example to showcase how to use `socket.io` with a static `express` server with `async` for control flow.",
-  "main": "server.js",
-  "repository": "",
-  "author": "Mostafa Eweda <mo.eweda@gmail.com>",
+  "name": "directv-alexa-control",
+  "version": "1.0.0",
+  "description": "Control of DirecTV STB via Alexa/AmazonEcho",
+  "main": "index.js",
+  "repository": "Bisonburger/directv-alexa-control",
+  "author": "Matt Young <matthew.young@bisonworks.com>",
   "dependencies": {
-    "alexa-app": "^2.3.4",
-    "body-parser": "^1.15.2",
-    "directv-remote": "0.0.3",
-    "express": "^4.14.0"
+    "alexa-app": "^3.1.0",
+    "directv-remote": "0.0.3"
   },
+  "alexa": {
+    "applicationId": "amzn1.echo-sdk-ams.app.999999-d0ed-9999-ad00-999999d00ebe"
+  },
+
   "devDependencies": {
     "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-install": "^0.6.0",
-    "gulp-zip": "^3.2.0",
+    "gulp-zip": "^4.0.0",
+    "jasmine-core": "^2.5.2",
+    "karma": "^1.3.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-coverage": "^1.1.1",
+    "karma-html-reporter": "^0.2.7",
+    "karma-ie-launcher": "^1.0.0",
+    "karma-firefox-launcher": "^1.0.0",
+    "karma-firefox-launcher": "^1.0.0",
+    "karma-jasmine": "^1.1.0",
     "node-aws-lambda": "^0.1.8",
+    "require-dir": "^0.3.1",
     "run-sequence": "^1.2.2"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "gulp": "gulp"
   }
 }

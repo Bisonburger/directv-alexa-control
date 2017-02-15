@@ -7,5 +7,5 @@ module.exports = {
   functionName: 'DirecTV_Whats_On',
   timeout: 10,
   memorySize: 128
-}
+};
 
