@@ -24,10 +24,7 @@ app.intent('AgeIntent', {
 });
 
 module.exports = app;
-
  
 // connect the alexa-app to AWS Lambda 
 exports.handler = app.lambda();
-
-module.exports = app
 
