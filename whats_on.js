@@ -19,8 +19,7 @@ WhatsOn.prototype.getProgrammingInfo = function(channel) {
     method: 'GET',
     uri: ENDPOINT + channel,
     resolveWithFullResponse: true,
-    json: true,
-    proxy: 'http://tus-proxy.ext.ray.com'
+    json: true
   };
   if( process.env.HTTP_PROXY )
     options.proxy = process.env.HTTP_PROXY;
