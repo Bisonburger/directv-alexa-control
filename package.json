@@ -7,20 +7,21 @@
   "author": "Matt Young <matthew.young@bisonworks.com>",
   "dependencies": {
     "alexa-app": "^3.1.0",
-    "bluebird": "^3.4.7",
-    "chai": "^3.5.0",
-    "chai-as-promised": "^6.0.0",
     "lodash": "^4.17.4",
-    "mocha": "^3.2.0",
     "request-promise": "^4.1.1"
   },
   "alexa": {
     "applicationId": "amzn1.ask.skill.603be3c0-9f9c-4c9f-a8cc-e015df83e460"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "deploy": "gulp deploy"
   },
   "devDependencies": {
+    "mocha": "^3.2.0",
+    "bluebird": "^3.4.7",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
     "del": "^2.2.2",
     "gulp": "^3.9.1",
     "gulp-install": "^0.6.0",

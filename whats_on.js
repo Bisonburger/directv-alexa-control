@@ -7,9 +7,9 @@ function WhatsOn() {}
 
 WhatsOn.prototype.getCurrentChannel = function() {
   return RESTHelper('/tv/getTuned').then(function(res){
-    console.log( 'got a result - looking for the proper name for ' + res.major );
+    //console.log( 'got a result - looking for the proper name for ' + res.major );
     res.channelName = findNameForChannel(res.major);
-    if( res.channelName ) console.log( 'found the name for ' + res.major + ', its ' + res.channelName );
+    //if( res.channelName ) console.log( 'found the name for ' + res.major + ', its ' + res.channelName );
     return res;
   });
 };
@@ -19,11 +19,11 @@ WhatsOn.prototype.getProgrammingInfo = function(channel) {
 
   if (isChannelName(channel)){
     channel = findChannelForName(channel);
-    console.log( 'channel was a name so I converted it to ' + channel );
+    //console.log( 'channel was a name so I converted it to ' + channel );
   }
 
   if (_.isArray(channel)) {
-    console.log( 'channel was an array - I\'ll try to process that' );
+    //console.log( 'channel was an array - I\'ll try to process that' );
     var a = [];
     channel.forEach(function(c, i) {a.push(me.getProgrammingInfo(c).then(function(r) {a[i] = r;}));});
     return a;
@@ -31,9 +31,9 @@ WhatsOn.prototype.getProgrammingInfo = function(channel) {
   else{
     return RESTHelper('/tv/getProgInfo?major=' + channel ).then(
       function(res) {
-        console.log( 'got a result - looking for the proper name for ' + channel );
+        //console.log( 'got a result - looking for the proper name for ' + channel );
         res.channelName = findNameForChannel(channel);
-        if( res.channelName ) console.log( 'found the name for ' + channel + ', its ' + res.channelName );
+        //if( res.channelName ) console.log( 'found the name for ' + channel + ', its ' + res.channelName );
         return res;
       });
   }
@@ -65,19 +65,19 @@ WhatsOn.prototype.formatProgrammingStatus = function(programmingInfo) {
 WhatsOn.prototype.tuneToChannel = function(channel) {
   if (isChannelName(channel)){
     channel = findChannelForName(channel);
-    console.log( 'channel was a name so I converted it to ' + channel );
+    //console.log( 'channel was a name so I converted it to ' + channel );
   }
   return RESTHelper('/tv/tune?major=' + channel ).then(
       function(res) {
-        console.log( 'got a result - looking for the proper name for ' + channel );
+        //console.log( 'got a result - looking for the proper name for ' + channel );
         res.channelName = findNameForChannel(channel);
-        if( res.channelName ) console.log( 'found the name for ' + channel + ', its ' + res.channelName );
+        //if( res.channelName ) console.log( 'found the name for ' + channel + ', its ' + res.channelName );
         return res;
       });
 };
 
 function RESTHelper(uri){
-  console.log( 'calling ' + process.env.DIRECTV_URL + uri );
+  //console.log( 'calling ' + process.env.DIRECTV_URL + uri );
   return rp({
     method: 'GET',
     uri: process.env.DIRECTV_URL + uri,
