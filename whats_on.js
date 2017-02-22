@@ -1,22 +1,15 @@
-'use strict';
 var _ = require('lodash');
 var rp = require('request-promise');
-//var Promise = require('bluebird');
+var channelMap = require('./channel-map.js');
 
-var ENDPOINT = process.env.DIRECTV_URL + '/tv/getProgInfo?major=';
+function WhatsOn() {}
 
-function WhatsOn() {
-  this.channelMap = require('./channel-map.js');
-}
 
 WhatsOn.prototype.getCurrentChannel = function() {
-  var options = {
-    method: 'GET',
-    uri: process.env.DIRECTV_URL + '/tv/getTuned',
-    resolveWithFullResponse: false,
-    json: true
-  };
-  return rp(options).then(function(res) {
+  return RESTHelper('/tv/getTuned').then(function(res){
+    console.log( 'got a result - looking for the proper name for ' + res.major );
+    res.channelName = findNameForChannel(res.major);
+    if( res.channelName ) console.log( 'found the name for ' + res.major + ', its ' + res.channelName );
     return res;
   });
 };
@@ -24,47 +17,41 @@ WhatsOn.prototype.getCurrentChannel = function() {
 WhatsOn.prototype.getProgrammingInfo = function(channel) {
   var me = this;
 
-  var isName = channel && isNaN(parseInt(channel, 10));
-  var name = channel;
-  if (isName)
-    channel = this.channelMap[channel];
-  var options = {
-    method: 'GET',
-    uri: process.env.DIRECTV_URL + '/tv/getProgInfo?major=' + channel,
-    resolveWithFullResponse: false,
-    json: true
-  };
+  if (isChannelName(channel)){
+    channel = findChannelForName(channel);
+    console.log( 'channel was a name so I converted it to ' + channel );
+  }
 
   if (_.isArray(channel)) {
+    console.log( 'channel was an array - I\'ll try to process that' );
     var a = [];
-    channel.forEach(function(c, i) {
-      a.push(me.getProgrammingInfo(c).then(function(r) {
-        a[i] = r;
-      }));
-    });
+    channel.forEach(function(c, i) {a.push(me.getProgrammingInfo(c).then(function(r) {a[i] = r;}));});
     return a;
   }
-  else
-    return rp(options).then(function(res) {
-      if (isName) res.channelName = name;
-      return res;
-    });
+  else{
+    return RESTHelper('/tv/getProgInfo?major=' + channel ).then(
+      function(res) {
+        console.log( 'got a result - looking for the proper name for ' + channel );
+        res.channelName = findNameForChannel(channel);
+        if( res.channelName ) console.log( 'found the name for ' + channel + ', its ' + res.channelName );
+        return res;
+      });
+  }
 };
 
 WhatsOn.prototype.formatProgrammingStatus = function(programmingInfo) {
   var me = this;
   if (_.isArray(programmingInfo)) {
     var info = [];
-    programmingInfo.forEach(function(programming) {
-      info.push(me.formatProgrammingStatus(programming));
-    });
+    programmingInfo.forEach(
+      function(programming){
+        info.push(me.formatProgrammingStatus(programming));
+      });
     return info.join('\n');
   }
   else {
-
     
-    var templateString = (programmingInfo.episodeTitle) ? '${title}, ${episodeTitle}, is on ${callsign}' : '${title} is on ${callsign}';
-
+    var templateString = programmingInfo.episodeTitle? '${title}, ${episodeTitle}, is on ${callsign}' : '${title} is on ${callsign}';
     var template = _.template(templateString);
     return template({
       callsign: programmingInfo.channelName || ('channel ' + programmingInfo.major),
@@ -76,14 +63,39 @@ WhatsOn.prototype.formatProgrammingStatus = function(programmingInfo) {
 };
 
 WhatsOn.prototype.tuneToChannel = function(channel) {
-  var options = {
+  if (isChannelName(channel)){
+    channel = findChannelForName(channel);
+    console.log( 'channel was a name so I converted it to ' + channel );
+  }
+  return RESTHelper('/tv/tune?major=' + channel ).then(
+      function(res) {
+        console.log( 'got a result - looking for the proper name for ' + channel );
+        res.channelName = findNameForChannel(channel);
+        if( res.channelName ) console.log( 'found the name for ' + channel + ', its ' + res.channelName );
+        return res;
+      });
+};
+
+function RESTHelper(uri){
+  console.log( 'calling ' + process.env.DIRECTV_URL + uri );
+  return rp({
     method: 'GET',
-    uri: process.env.DIRECTV_URL + '/tv/tune?major=' + channel,
+    uri: process.env.DIRECTV_URL + uri,
     resolveWithFullResponse: false,
     json: true
-  };
+  });
+}
 
-  return rp(options);
-};
+function findChannelForName(name){
+  return name? channelMap[Object.keys(channelMap).find( function(e){ return e.toUpperCase() === name.toUpperCase() } )] : undefined;
+}
+
+function findNameForChannel(channel){
+  return Object.keys(channelMap).find( function(e){ return channelMap[e] === channel } );
+}
+
+function isChannelName(channel){
+  return channel && isNaN(parseInt(channel, 10));
+}
 
 module.exports = WhatsOn;

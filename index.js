@@ -56,7 +56,7 @@ app.intent('changeChannelByNameIntent', {
       '{change|switch|go|tune} to {-|CHANNEL_NAME}'
     ]
   },
-  handleChangeChannelByNumberRequest);
+  handleChangeChannelByNameRequest);
   
 function handleWhatsOnCurrentChannelRequest(req,res){
   var whatsOn = new WhatsOn();
@@ -91,9 +91,19 @@ function handleChangeChannelByNumberRequest(req, res) {
   var whatsOn = new WhatsOn();
 
   return whatsOn.tuneToChannel(channelNumber).then(function(programInfo) {
-    res.say('OK, tuning to channel ' + channelNumber ).send();
+    res.say('OK, tuning to channel ' + (channelNumber||'') ).send();
   });
 }
+
+function handleChangeChannelByNameRequest(req, res) {
+  var channelName = req.slot('CHANNEL_NAME');
+  var whatsOn = new WhatsOn();
+
+  return whatsOn.tuneToChannel(channelName).then(function(programInfo) {
+    res.say('OK, tuning to channel ' + (programInfo.channelName||'') ).send();
+  });
+}
+
 
 // hack to fix issues with custom lists
 var utterancesMethod = app.utterances;

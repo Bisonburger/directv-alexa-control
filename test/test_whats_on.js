@@ -31,6 +31,16 @@ describe('WhatsOn', function() {
                 return expect(value).to.eventually.eq(4);
             });
         });
+
+        context('with a valid channel name in wrong case', function() {
+            it('returns channel', function() {
+                channel = 'kVoA';
+                var value = subject.getProgrammingInfo(channel).then(function(obj) {
+                    return obj.major;
+                });
+                return expect(value).to.eventually.eq(4);
+            });
+        });
         
         context('with a valid channel name array', function() {
             it('returns channel array', function() {
