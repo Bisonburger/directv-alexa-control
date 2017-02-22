@@ -40,7 +40,7 @@ app.intent('whatsOnByNameIntent', {
 
 app.intent('changeChannelByNumberIntent', {
     'slots': {
-      'CHANNEL_NUMBER': 'AMAZON.NUMBER'
+      'CHANNEL_NUMBER': 'NUMBER'
     },
     'utterances': [
       '{change|switch|go|tune} to channel {-|CHANNEL_NUMBER}'
