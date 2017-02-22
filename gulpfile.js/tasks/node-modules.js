@@ -1,9 +1,11 @@
 var gulp = require('gulp');
 var install = require('gulp-install');
 
+var dest = 'dist/';
+
 function nodeModulesTask() {
   return gulp.src('./package.json')
-    .pipe(gulp.dest('dist/'))
+    .pipe(gulp.dest(dest))
     .pipe(install({production: true}));
 }
 

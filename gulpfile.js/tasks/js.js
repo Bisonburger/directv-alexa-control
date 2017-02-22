@@ -1,8 +1,11 @@
 var gulp = require('gulp');
 
+var srcFilesList =['index.js','channel-map.js','whats_on.js']; 
+var dest = 'dist/';
+
 function jsTask() {
-  return gulp.src(['index.js','channel-map.js','whats_on.js'])
-    .pipe(gulp.dest('dist/'));
+  return gulp.src(srcFilesList)
+    .pipe(gulp.dest(dest));
 }
 gulp.task('js', jsTask );
 

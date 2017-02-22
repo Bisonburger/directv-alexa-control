@@ -64,19 +64,12 @@ describe('WhatsOn', function() {
             it('formats properly', function() {
                 var status = {
                     "callsign": "KVOA",
-                    "date": "20170221",
-                    "duration": 3600,
                     "major": 4,
-                    "minor": 65535,
-                    "programId": "49931038",
-                    "rating": "TV-G",
-                    "startTime": 1487696400,
-                    "stationId": 3910460,
                     "title": "Today"
                 };
 
                 var formatted = subject.formatProgrammingStatus(status);
-                return expect(formatted).to.eq('Today is on KVOA');
+                return expect(formatted).to.eq('Today is on channel 4');
             });
         });
 
@@ -84,30 +77,18 @@ describe('WhatsOn', function() {
             it('formats properly', function() {
                 var status = [{
                     "callsign": "KVOA",
-                    "date": "20170221",
-                    "duration": 3600,
                     "major": 4,
-                    "minor": 65535,
-                    "programId": "49931038",
-                    "rating": "TV-G",
-                    "startTime": 1487696400,
-                    "stationId": 3910460,
-                    "title": "Today"
+                    "title": "Today",
+                    "channelName": "NBC"
                 }, {
                     "callsign": "KGUN",
-                    "date": "20170221",
-                    "duration": 3600,
                     "major": 9,
                     "minor": 65535,
-                    "programId": "49931038",
-                    "rating": "TV-G",
-                    "startTime": 1487696400,
-                    "stationId": 3910460,
                     "title": "Maury",
                     'episodeTitle': "Am I The Daddy?"
                 }];
                 var formatted = subject.formatProgrammingStatus(status);
-                return expect(formatted).to.eq('Today is on KVOA\nMaury, Am I The Daddy?, is on KGUN');
+                return expect(formatted).to.eq('Today is on NBC\nMaury, Am I The Daddy?, is on channel 9');
             });
         });
 

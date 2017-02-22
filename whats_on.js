@@ -62,11 +62,12 @@ WhatsOn.prototype.formatProgrammingStatus = function(programmingInfo) {
   }
   else {
 
+    
     var templateString = (programmingInfo.episodeTitle) ? '${title}, ${episodeTitle}, is on ${callsign}' : '${title} is on ${callsign}';
 
     var template = _.template(templateString);
     return template({
-      callsign: programmingInfo.channelName || programmingInfo.callsign,
+      callsign: programmingInfo.channelName || ('channel ' + programmingInfo.major),
       title: programmingInfo.title,
       channel: programmingInfo.major,
       episodeTitle: programmingInfo.episodeTitle || ''

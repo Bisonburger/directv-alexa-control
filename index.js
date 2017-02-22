@@ -23,27 +23,37 @@ app.intent('whatsOnByNumberIntent', {
       'CHANNEL_NUMBER': 'NUMBER'
     },
     'utterances': [
-      '{what\'s|what is} {on} { channel CHANNEL_NUMBER }'
+      '{what\'s|what is} on channel {-|CHANNEL_NUMBER}'
     ]
   },
   handleWhatsOnByNumberRequest);
 
 app.intent('whatsOnByNameIntent', {
     'slots': {
-      'CHANNEL_NAME': 'LITERAL'
+      'CHANNEL_NAME': 'CHANNELS'
     },
     'utterances': [
-      '{what\'s|what is} {on} { CHANNEL_NAME }'
+      '{what\'s|what is} on {-|CHANNEL_NAME}'
     ]
   },
   handleWhatsOnByNameRequest);
 
 app.intent('changeChannelByNumberIntent', {
     'slots': {
-      'CHANNEL_NUMBER': 'NUMBER'
+      'CHANNEL_NUMBER': 'AMAZON.NUMBER'
     },
     'utterances': [
-      '{change|switch|go} {to} { channel CHANNEL_NUMBER }'
+      '{change|switch|go|tune} to channel {-|CHANNEL_NUMBER}'
+    ]
+  },
+  handleChangeChannelByNumberRequest);
+  
+app.intent('changeChannelByNameIntent', {
+    'slots': {
+      'CHANNEL_NAME': 'CHANNELS'
+    },
+    'utterances': [
+      '{change|switch|go|tune} to {-|CHANNEL_NAME}'
     ]
   },
   handleChangeChannelByNumberRequest);

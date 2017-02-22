@@ -2,8 +2,10 @@ var gulp = require('gulp');
 var del = require('del');
 
 
+var cleanFileList = ['./dist', './dist.zip'];
+
 function cleanTask() {
-  return del(['./dist', './dist.zip']);
+  return del( cleanFileList );
 }
 gulp.task('clean', cleanTask);
 
