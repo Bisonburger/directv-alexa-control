@@ -1,10 +1,37 @@
+/*
+    whats_on.js:  
+    
+    ISC License
+    
+    Copyright (c) 2017, BISONWORKS, LLC
+    
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted, provided that the above
+    copyright notice and this permission notice appear in all copies.
+    
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
+    OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+ */
 var _ = require('lodash');
 var rp = require('request-promise');
 var channelMap = require('./channel-map.js');
 
+/**
+ * Constructor for the WhatsOn object
+ */
 function WhatsOn() {}
 
 
+/**
+ * Retrieve programming information for the currently tuned channel
+ * 
+ * @return {Object} programming information
+ */ 
 WhatsOn.prototype.getCurrentChannel = function() {
   return RESTHelper('/tv/getTuned').then(function(res){
     //console.log( 'got a result - looking for the proper name for ' + res.major );
@@ -14,6 +41,12 @@ WhatsOn.prototype.getCurrentChannel = function() {
   });
 };
 
+/**
+ * Retrieve programming information for the supplied channel
+ * 
+ * @param {String|Number} channel
+ * @return {Object} programming information
+ */
 WhatsOn.prototype.getProgrammingInfo = function(channel) {
   var me = this;
 
@@ -39,6 +72,12 @@ WhatsOn.prototype.getProgrammingInfo = function(channel) {
   }
 };
 
+/**
+ * Format the programming information to SSML response
+ * 
+ * @param {Object|Array} programmingInfo
+ * @return {String|Array} formated message(s)
+ */
 WhatsOn.prototype.formatProgrammingStatus = function(programmingInfo) {
   var me = this;
   if (_.isArray(programmingInfo)) {
@@ -62,6 +101,12 @@ WhatsOn.prototype.formatProgrammingStatus = function(programmingInfo) {
   }
 };
 
+/**
+ * Tune the receiver to a given channel number/name
+ * 
+ * @param {String|Number} channel
+ * @return {Object} channel tune status
+ */
 WhatsOn.prototype.tuneToChannel = function(channel) {
   if (isChannelName(channel)){
     channel = findChannelForName(channel);
@@ -76,24 +121,49 @@ WhatsOn.prototype.tuneToChannel = function(channel) {
       });
 };
 
+/**
+ * Helper function to send a REST call to the receiver
+ * 
+ * @param {String} uri - receiver command to to sent
+ * @return {Object} recieved response - body only
+ */
 function RESTHelper(uri){
   //console.log( 'calling ' + process.env.DIRECTV_URL + uri );
   return rp({
     method: 'GET',
-    uri: process.env.DIRECTV_URL + uri,
+    uri: (process.env.DIRECTV_URL || 'http://localhost:8080') + uri,
     resolveWithFullResponse: false,
     json: true
   });
 }
 
+/**
+ * Lookup a channel for a given name
+ * 
+ * @param {String} channel name
+ * @return {Number} channel number corresponding to the name; undefined if not found
+ */
 function findChannelForName(name){
   return name? channelMap[Object.keys(channelMap).find( function(e){ return e.toUpperCase() === name.toUpperCase() } )] : undefined;
 }
 
+/**
+ * Lookup a name for a given channel number.  Will return the first one found if multiples are in the list
+ * 
+ * @param {Number} channel number
+ * @return {String} channel name corresponding to the channel number; undefined if not found
+ */
 function findNameForChannel(channel){
   return Object.keys(channelMap).find( function(e){ return channelMap[e] === channel } );
 }
 
+/**
+ * Determine if the value is a channel name.  Currently determined by 
+ * trying to convert the input value to a number - if this fails, its considered a name
+ * 
+ * @param {Object} channel potential channel name
+ * @return {Boolean} true if the channel represents a channel name, false otherwise
+ */
 function isChannelName(channel){
   return channel && isNaN(parseInt(channel, 10));
 }

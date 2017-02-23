@@ -1,6 +1,6 @@
 var gulp = require('gulp');
 
-var srcFilesList =['index.js','channel-map.js','whats_on.js']; 
+var srcFilesList =['index.js','channel-map.js','whats-on.js']; 
 var dest = 'dist/';
 
 function jsTask() {
