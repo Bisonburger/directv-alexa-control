@@ -20,7 +20,7 @@
 module.change_code = 1;
 var Alexa = require('alexa-app');
 var app = new Alexa.app('DirecTV');
-var WhatsOn = require('./whats_on');
+var WhatsOn = require('./whats-on');
 
 
 /*

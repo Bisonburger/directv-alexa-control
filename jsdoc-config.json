@@ -1,0 +1,29 @@
+{
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "opts": {
+    "destination": "./docs/",
+    "encoding": "utf8",
+        "private": true,
+        "recurse": true,
+    "template": "node_modules/minami"
+  },
+    "source": {
+        "include": [".", "package.json", "README.md"],
+        "includePattern": ".js$",
+        "excludePattern": "(node_modules/|docs|gulpfile.js|test)"
+    },
+  "plugins": [
+    "plugins/markdown"
+  ],
+  "templates": {
+    "cleverLinks": false,
+    "monospaceLinks": true,
+    "useLongnameInNav": false,
+    "default": {
+      "outputSourceFiles": true
+    }
+  }
+}
+
