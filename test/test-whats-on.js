@@ -26,14 +26,26 @@ chai.config.includeStack = true;
 var Promise = require('bluebird');
 
 describe('WhatsOn', function() {
-    var subject = new WhatsOn();
-    var channel;
+    var subject = new WhatsOn(),
+        channel = 4,
+        location = '0';
 
     describe('#getProgrammingInfo', function() {
-        context('with a valid channel', function() {
+        context('with a valid channel and no location', function() {
             it('returns channel', function() {
                 channel = 4;
                 var value = subject.getProgrammingInfo(channel).then(function(obj) {
+                    return obj.major;
+                });
+                return expect(value).to.eventually.eq(channel);
+            });
+        });
+
+        context('with a valid channel and a location', function() {
+            it('returns channel', function() {
+                channel = 4;
+                location = '2832C5A7D138';
+                var value = subject.getProgrammingInfo(channel,location).then(function(obj) {
                     return obj.major;
                 });
                 return expect(value).to.eventually.eq(channel);

@@ -1,26 +1,13 @@
-/*
-    index.js:  
-    
-    ISC License
-    
-    Copyright (c) 2017, BISONWORKS, LLC
-    
-    Permission to use, copy, modify, and/or distribute this software for any
-    purpose with or without fee is hereby granted, provided that the above
-    copyright notice and this permission notice appear in all copies.
-    
-    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
-    OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-    PERFORMANCE OF THIS SOFTWARE.
+/**
+ * AWS Lambda service for controlling DIRECTV
+ * 
+ * @license ISC    
+ * @copyright 2017, BISONWORKS, LLC
  */
 module.change_code = 1;
-var Alexa = require('alexa-app');
-var app = new Alexa.app('DirecTV');
-var WhatsOn = require('./whats-on');
+var Alexa = require('alexa-app'),
+  app = new Alexa.app('DirecTV'),
+  WhatsOn = require('./whats-on');
 
 
 /*
@@ -34,9 +21,11 @@ app.launch( handleLaunchEvent );
  */
 app.intent('whatsOnCurrentChannelIntent', {
     'slots': {
+      'LOCATION': 'LOCATIONS'
     },
     'utterances': [
-      '{what\'s|what is} {on}'
+      '{what\'s|what is} on',
+      '{what\'s|what is} on in the {-|LOCATION}'
     ]
   },
   handleWhatsOnCurrentChannelRequest);
@@ -47,10 +36,13 @@ app.intent('whatsOnCurrentChannelIntent', {
  */
 app.intent('whatsOnByNumberIntent', {
     'slots': {
-      'CHANNEL_NUMBER': 'NUMBER'
+      'CHANNEL_NUMBER': 'NUMBER',
+      'LOCATION': 'LOCATIONS'
     },
     'utterances': [
-      '{what\'s|what is} on channel {-|CHANNEL_NUMBER}'
+      '{what\'s|what is} on channel {-|CHANNEL_NUMBER}',
+      '{what\'s|what is} on channel {-|CHANNEL_NUMBER} in the {-|LOCATION}',
+      '{what\'s|what is} on in the {-|LOCATION} on channel {-|CHANNEL_NUMBER}'
     ]
   },
   handleWhatsOnByNumberRequest);
@@ -61,10 +53,13 @@ app.intent('whatsOnByNumberIntent', {
  */
 app.intent('whatsOnByNameIntent', {
     'slots': {
-      'CHANNEL_NAME': 'CHANNELS'
+      'CHANNEL_NAME': 'CHANNELS',
+      'LOCATION': 'LOCATIONS'
     },
     'utterances': [
-      '{what\'s|what is} on {-|CHANNEL_NAME}'
+      '{what\'s|what is} on {-|CHANNEL_NAME}',
+      '{what\'s|what is} on {-|CHANNEL_NAME} in the {-|LOCATION}',
+      '{what\'s|what is} on in the {-|LOCATION} on {-|CHANNEL_NAME}',
     ]
   },
   handleWhatsOnByNameRequest);
@@ -75,10 +70,13 @@ app.intent('whatsOnByNameIntent', {
  */
 app.intent('changeChannelByNumberIntent', {
     'slots': {
-      'CHANNEL_NUMBER': 'NUMBER'
+      'CHANNEL_NUMBER': 'NUMBER',
+      'LOCATION': 'LOCATIONS'
     },
     'utterances': [
-      '{change|switch|go|tune} to channel {-|CHANNEL_NUMBER}'
+      '{change|switch|tune} to channel {-|CHANNEL_NUMBER}',
+      '{change|switch|tune} to channel {-|CHANNEL_NUMBER} in the {-|LOCATION}',
+      '{change|switch|tune} the {-|LOCATION} to channel {-|CHANNEL_NUMBER}'
     ]
   },
   handleChangeChannelByNumberRequest);
@@ -89,14 +87,35 @@ app.intent('changeChannelByNumberIntent', {
  */
 app.intent('changeChannelByNameIntent', {
     'slots': {
-      'CHANNEL_NAME': 'CHANNELS'
+      'CHANNEL_NAME': 'CHANNELS',
+      'LOCATION': 'LOCATIONS'
     },
     'utterances': [
-      '{change|switch|go|tune} to {-|CHANNEL_NAME}'
+      '{change|switch|tune} to {-|CHANNEL_NAME}',
+      '{change|switch|tune} to channel {-|CHANNEL_NAME} in the {-|LOCATION}',
+      '{change|switch|tune} the {-|LOCATION} to channel {-|CHANNEL_NAME}'
     ]
   },
   handleChangeChannelByNameRequest);
   
+/**
+ * By default for all requests set the LOCATION to TV Room
+ */
+app.pre = prePOST;
+
+/**
+ * By default for all requests set the LOCATION to TV Room
+ * 
+ * @param {Object} req request object
+ * @param {Object} res response object
+ * @param {String} type request type (IntentRequest,LaunchRequest,SessionEndRequest)
+ */
+function prePOST(request,response,type){
+  if( !request.data.request.intent.slots.LOCATION ){
+    request.data.request.intent.slots.LOCATION = { "value": "TV room", "name": "LOCATION" };
+  }
+}
+
 /**
  * Handle requests to launch the skill
  * 
@@ -116,9 +135,10 @@ function handleLaunchEvent(req, res) {
  * @param {Object} res response object
  */
 function handleWhatsOnCurrentChannelRequest(req,res){
-  var whatsOn = new WhatsOn();
+  var whatsOn = new WhatsOn(),
+      location = req.slot('LOCATION');
 
-  return whatsOn.getCurrentChannel().then(function(programInfo) {
+  return whatsOn.getCurrentChannel(location).then(function(programInfo) {
     res.say(whatsOn.formatProgrammingStatus(programInfo)).send();
   });
 }
@@ -130,11 +150,12 @@ function handleWhatsOnCurrentChannelRequest(req,res){
  * @param {Object} res response object
  */
 function handleWhatsOnByNumberRequest(req, res) {
-  var channelNumber = req.slot('CHANNEL_NUMBER');
+  var channelNumber = req.slot('CHANNEL_NUMBER'),
+    location = req.slot('LOCATION');
 
   var whatsOn = new WhatsOn();
 
-  return whatsOn.getProgrammingInfo(channelNumber).then(function(programInfo) {
+  return whatsOn.getProgrammingInfo(channelNumber,location).then(function(programInfo) {
     res.say(whatsOn.formatProgrammingStatus(programInfo)).send();
   });
 }
@@ -146,10 +167,11 @@ function handleWhatsOnByNumberRequest(req, res) {
  * @param {Object} res response object
  */
 function handleWhatsOnByNameRequest(req, res) {
-  var channelName = req.slot('CHANNEL_NAME');
-  var whatsOn = new WhatsOn();
+  var channelName = req.slot('CHANNEL_NAME'),
+    location = req.slot('LOCATION'),
+    whatsOn = new WhatsOn();
 
-  return whatsOn.getProgrammingInfo(channelName).then(function(programInfo) {
+  return whatsOn.getProgrammingInfo(channelName,location).then(function(programInfo) {
     res.say(whatsOn.formatProgrammingStatus(programInfo));
   });
 }
@@ -161,10 +183,11 @@ function handleWhatsOnByNameRequest(req, res) {
  * @param {Object} res response object
  */
 function handleChangeChannelByNumberRequest(req, res) {
-  var channelNumber = req.slot('CHANNEL_NUMBER');
-  var whatsOn = new WhatsOn();
+  var channelNumber = req.slot('CHANNEL_NUMBER'),
+    location = req.slot('LOCATION'),
+    whatsOn = new WhatsOn();
 
-  return whatsOn.tuneToChannel(channelNumber).then(function(programInfo) {
+  return whatsOn.tuneToChannel(channelNumber,location).then(function(programInfo) {
     res.say('OK, tuning to channel ' + (channelNumber||'') ).send();
   });
 }
@@ -176,10 +199,11 @@ function handleChangeChannelByNumberRequest(req, res) {
  * @param {Object} res response object
  */
 function handleChangeChannelByNameRequest(req, res) {
-  var channelName = req.slot('CHANNEL_NAME');
-  var whatsOn = new WhatsOn();
+  var channelName = req.slot('CHANNEL_NAME'),
+    location = req.slot('LOCATION'),
+    whatsOn = new WhatsOn();
 
-  return whatsOn.tuneToChannel(channelName).then(function(programInfo) {
+  return whatsOn.tuneToChannel(channelName,location).then(function(programInfo) {
     res.say('OK, tuning to channel ' + (programInfo.channelName||'') ).send();
   });
 }

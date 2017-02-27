@@ -5,9 +5,9 @@
  * @license ISC    
  * @copyright 2017, BISONWORKS, LLC
  */
-var _ = require('lodash');
-var rp = require('request-promise');
-var channelMap = require('./channel-map.js');
+var _ = require('lodash'),
+  rp = require('request-promise'),
+  channelMap = require('./channel-map.js');
 
 /**
  * Constructor for the WhatsOn object
@@ -19,11 +19,9 @@ function WhatsOn() {}
  * 
  * @return {Object} programming information
  */ 
-WhatsOn.prototype.getCurrentChannel = function() {
-  return RESTHelper('/tv/getTuned').then(function(res){
-    //console.log( 'got a result - looking for the proper name for ' + res.major );
+WhatsOn.prototype.getCurrentChannel = function(location) {
+  return RESTHelper('/tv/getTuned',{'clientAddr':findClientAddrForLocation(location)}).then(function(res){
     res.channelName = findNameForChannel(res.major);
-    //if( res.channelName ) console.log( 'found the name for ' + res.major + ', its ' + res.channelName );
     return res;
   });
 };
@@ -31,10 +29,10 @@ WhatsOn.prototype.getCurrentChannel = function() {
 /**
  * Retrieve programming information for the supplied channel
  * 
- * @param {String|Number} channel
+ * @param {String|Number} channel - channel identifier (string or num) to request information from
  * @return {Object} programming information
  */
-WhatsOn.prototype.getProgrammingInfo = function(channel) {
+WhatsOn.prototype.getProgrammingInfo = function(channel,location) {
   var me = this;
 
   if (isChannelName(channel)){
@@ -49,7 +47,7 @@ WhatsOn.prototype.getProgrammingInfo = function(channel) {
     return a;
   }
   else{
-    return RESTHelper('/tv/getProgInfo?major=' + channel ).then(
+    return RESTHelper('/tv/getProgInfo', { 'major': channel, 'clientAddr': findClientAddrForLocation(location) } ).then(
       function(res) {
         //console.log( 'got a result - looking for the proper name for ' + channel );
         res.channelName = findNameForChannel(channel);
@@ -77,8 +75,8 @@ WhatsOn.prototype.formatProgrammingStatus = function(programmingInfo) {
   }
   else {
     
-    var templateString = programmingInfo.episodeTitle? '${title}, ${episodeTitle}, is on ${callsign}' : '${title} is on ${callsign}';
-    var template = _.template(templateString);
+    var templateString = programmingInfo.episodeTitle? '${title}, ${episodeTitle}, is on ${callsign}' : '${title} is on ${callsign}',
+      template = _.template(templateString);
     return template({
       callsign: programmingInfo.channelName || ('channel ' + programmingInfo.major),
       title: programmingInfo.title,
@@ -94,12 +92,12 @@ WhatsOn.prototype.formatProgrammingStatus = function(programmingInfo) {
  * @param {String|Number} channel
  * @return {Object} channel tune status
  */
-WhatsOn.prototype.tuneToChannel = function(channel) {
+WhatsOn.prototype.tuneToChannel = function(channel,location) {
   if (isChannelName(channel)){
     channel = findChannelForName(channel);
     //console.log( 'channel was a name so I converted it to ' + channel );
   }
-  return RESTHelper('/tv/tune?major=' + channel ).then(
+  return RESTHelper('/tv/tune', { 'major': channel, 'clientAddr':findClientAddrForLocation(location) }).then(
       function(res) {
         //console.log( 'got a result - looking for the proper name for ' + channel );
         res.channelName = findNameForChannel(channel);
@@ -114,11 +112,13 @@ WhatsOn.prototype.tuneToChannel = function(channel) {
  * @param {String} uri - receiver command to to sent
  * @return {Object} recieved response - body only
  */
-function RESTHelper(uri){
+function RESTHelper(uri,qs){
   //console.log( 'calling ' + process.env.DIRECTV_URL + uri );
   return rp({
     method: 'GET',
-    uri: (process.env.DIRECTV_URL || 'http://localhost:8080') + uri,
+    baseUrl: (process.env.DIRECTV_URL || 'http://localhost:8080'),
+    uri: uri,
+    qs: qs,
     resolveWithFullResponse: false,
     json: true,
     simple: true
@@ -154,6 +154,12 @@ function findNameForChannel(channel){
  */
 function isChannelName(channel){
   return channel && isNaN(parseInt(channel, 10));
+}
+
+function findClientAddrForLocation(location){
+  if( location.toLowerCase() === 'bedroom' || location.toLowerCase() === 'master' )
+    return '2832C5A7D138';
+  else return '0';
 }
 
 module.exports = WhatsOn;
